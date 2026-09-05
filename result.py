@@ -1,48 +1,52 @@
-def display_result(target, result, scan_name):
-
-    print("\n" + "=" * 50)
-    print(f"              {scan_name.upper()}")
-    print("=" * 50)
-
-    print(f"\nTarget: {target}")
-    print(f"Status: {result['status']}")
+def build_output(target, result, scan_name):
+    """Build the exact terminal output as a string."""
+    lines = [
+        "",
+        "=" * 50,
+        f"              {scan_name.upper()}",
+        "=" * 50,
+        f"\nTarget: {target}",
+        f"Status: {result['status']}",
+    ]
 
     if result["hostname"]:
-        print(f"Hostname: {result['hostname']}")
+        lines.append(f"Hostname: {result['hostname']}")
 
-    # OS information
     if result["os"] or result["device"]:
-        print("\n[ OS INFORMATION ]")
-
+        lines.append("\n[ OS INFORMATION ]")
         if result["os"]:
-            print(f"OS: {result['os']}")
-
+            lines.append(f"OS: {result['os']}")
         if result["device"]:
-            print(f"Device: {result['device']}")
+            lines.append(f"Device: {result['device']}")
 
-    # Ports
-    print(f"\n[ PORTS ]")
-    print(f"Found: {len(result['ports'])}")
+    lines.append("\n[ PORTS ]")
+    lines.append(f"Found: {len(result['ports'])}")
 
     if result["ports"]:
         for p in result["ports"]:
-            print(
+            lines.append(
                 f"{p['port']}/{p['protocol']}  "
                 f"{p['state']}  "
                 f"{p['service']}  "
                 f"{p['version']}"
             )
     else:
-        print("No open ports found.")
+        lines.append("No open ports found.")
 
-    # Network
     if result["distance"]:
-        print(f"\nNetwork Distance: {result['distance']}")
+        lines.append(f"\nNetwork Distance: {result['distance']}")
 
-    # Warnings
     if result["warnings"]:
-        print("\n[ WARNING ]")
+        lines.append("\n[ WARNING ]")
         for warning in result["warnings"]:
-            print(warning)
+            lines.append(warning)
 
-    print("\n" + "=" * 50)
+    lines.append("\n" + "=" * 50)
+    return "\n".join(lines)
+
+
+def display_result(target, result, scan_name):
+    """Print the result and return the output as a string."""
+    output = build_output(target, result, scan_name)
+    print(output)
+    return output

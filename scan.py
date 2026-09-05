@@ -1,3 +1,4 @@
+
 import subprocess
 
 
@@ -7,14 +8,14 @@ SCAN_TYPES = {
     "3": ("Full Port Scan", ["-p-"]),
     "4": ("UDP Scan", ["-sU", "--top-ports", "100"]),
     "5": ("OS Detection", ["-O"]),
-    "6": ("Detailed Scan", ["-sT", "-sV", "-O","-p-"]),
+    "6": ("Detailed Scan", ["-sT", "-sV", "-O", "-p-"]),
     "7": ("Vulnerability Scan", ["--script", "vuln"]),
     "8": ("Network Discovery", ["-sn"]),
 }
 
 
 def run_scan(target, choice):
-    """Run Nmap scan and return the output."""
+    """Run Nmap scan and return the raw output."""
 
     if choice in SCAN_TYPES:
         name, arguments = SCAN_TYPES[choice]
@@ -45,7 +46,11 @@ def run_scan(target, choice):
     else:
         return "[!] Invalid scan choice."
 
-    command = ["nmap", *arguments, target]
+    # Build Nmap command
+    command = ["nmap", *arguments]
+
+    # Add target at the end
+    command.append(target)
 
     print(f"\n[+] Starting {name}...")
     print(f"[+] Command: {' '.join(command)}")
