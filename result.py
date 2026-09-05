@@ -1,60 +1,48 @@
-def display_result(target, result):
-    """Display parsed Nmap results in a beginner-friendly format."""
+def display_result(target, result, scan_name):
 
     print("\n" + "=" * 50)
-    print("                 SCAN RESULT")
+    print(f"              {scan_name.upper()}")
     print("=" * 50)
 
-    # Target information
     print(f"\nTarget: {target}")
+    print(f"Status: {result['status']}")
 
-    # Host status
-    if result["host_status"] == "up":
-        print("Status: ONLINE")
-    elif result["host_status"] == "down":
-        print("Status: OFFLINE")
+    if result["hostname"]:
+        print(f"Hostname: {result['hostname']}")
+
+    # OS information
+    if result["os"] or result["device"]:
+        print("\n[ OS INFORMATION ]")
+
+        if result["os"]:
+            print(f"OS: {result['os']}")
+
+        if result["device"]:
+            print(f"Device: {result['device']}")
+
+    # Ports
+    print(f"\n[ PORTS ]")
+    print(f"Found: {len(result['ports'])}")
+
+    if result["ports"]:
+        for p in result["ports"]:
+            print(
+                f"{p['port']}/{p['protocol']}  "
+                f"{p['state']}  "
+                f"{p['service']}  "
+                f"{p['version']}"
+            )
     else:
-        print("Status: UNKNOWN")
+        print("No open ports found.")
 
-    # Port information
-    ports = result["ports"]
+    # Network
+    if result["distance"]:
+        print(f"\nNetwork Distance: {result['distance']}")
 
-    print(f"\nOpen Ports: {len(ports)}")
+    # Warnings
+    if result["warnings"]:
+        print("\n[ WARNING ]")
+        for warning in result["warnings"]:
+            print(warning)
 
-    if not ports:
-        print("\nNo open ports found.")
-        return
-
-    print("-" * 50)
-
-    for port in ports:
-        print(f"\nPort: {port['port']}/{port['protocol']}")
-        print(f"State: {port['state']}")
-        print(f"Service: {port['service']}")
-
-        if port["version"]:
-            print(f"Version: {port['version']}")
-
-        print(f"Meaning: {get_service_meaning(port['service'])}")
-
-
-def get_service_meaning(service):
-    """Return a beginner-friendly explanation of a service."""
-
-    meanings = {
-        "ssh": "Remote administration service.",
-        "http": "Web server used for websites.",
-        "https": "Secure web server used for websites.",
-        "ftp": "File transfer service.",
-        "smtp": "Used for sending emails.",
-        "dns": "Translates domain names into IP addresses.",
-        "mysql": "Database server.",
-        "postgresql": "PostgreSQL database server.",
-        "rdp": "Remote desktop service.",
-        "telnet": "Remote login service. It is not encrypted.",
-    }
-
-    return meanings.get(
-        service.lower(),
-        "A network service running on this port."
-    )
+    print("\n" + "=" * 50)
