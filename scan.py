@@ -7,7 +7,7 @@ SCAN_TYPES = {
     "3": ("Full Port Scan", ["-p-"]),
     "4": ("UDP Scan", ["-sU", "--top-ports", "100"]),
     "5": ("OS Detection", ["-O"]),
-    "6": ("Detailed Scan", ["-sV", "-O"]),
+    "6": ("Detailed Scan", ["-sT", "-sV", "-O","-p-"]),
     "7": ("Vulnerability Scan", ["--script", "vuln"]),
     "8": ("Network Discovery", ["-sn"]),
 }
@@ -16,12 +16,10 @@ SCAN_TYPES = {
 def run_scan(target, choice):
     """Run Nmap scan and return the output."""
 
-    # Options 1-8
     if choice in SCAN_TYPES:
         name, arguments = SCAN_TYPES[choice]
         arguments = arguments.copy()
 
-    # Option 9: Port-specific scan
     elif choice == "9":
         name = "Port Scan"
 
@@ -32,11 +30,12 @@ def run_scan(target, choice):
 
         arguments = ["-p", ports]
 
-    # Option 10: Custom scan
     elif choice == "10":
         name = "Custom Scan"
 
-        custom_options = input("Enter Nmap options: ").strip()
+        custom_options = input(
+            "Enter scan options (e.g. -sS -O): "
+        ).strip()
 
         if not custom_options:
             return "[!] No Nmap options specified."
