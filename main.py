@@ -3,6 +3,23 @@ from filter import parse_nmap_output
 from result import display_result
 
 
+def write_result_file(output, file_format, file_path):
+    """Save the exact terminal output to a txt or html file."""
+    if file_format == "html":
+        output = (
+            "<!DOCTYPE html>\n"
+            "<html lang=\"en\">\n"
+            "<head><meta charset=\"UTF-8\"><title>Scano Result</title></head>\n"
+            "<body><pre>\n"
+            f"{output}\n"
+            "</pre></body>\n"
+            "</html>\n"
+        )
+
+    with open(file_path, "w") as file:
+        file.write(output)
+
+
 def show_scan_menu():
     """Display the scan menu and return the user's choice."""
 
@@ -33,6 +50,22 @@ def main():
     print("=" * 50)
 
     target = input("Enter target IP address: ").strip()
+
+    # Ask about saving result
+    save_result = input("Do you want to save the result? (y/n): ").strip().lower()
+
+    file_format = None
+    file_path = None
+
+    if save_result == "y":
+
+        file_format = input("Save as (txt/html): ").strip().lower()
+
+        while file_format not in ("txt", "html"):
+            print("[!] Please enter either txt or html.")
+            file_format = input("Save as (txt/html): ").strip().lower()
+
+        file_path = input("Enter file path: ").strip()
 
     choice = show_scan_menu()
 
@@ -65,8 +98,13 @@ def main():
         "10": "Custom Scan"
     }.get(choice, "Scan")
 
-    # Display formatted result
-    display_result(target, filtered_result, scan_name)
+    # Display formatted result and get the exact terminal output
+    output = display_result(target, filtered_result, scan_name)
+
+    # Save exact terminal output
+    if save_result == "y":
+        write_result_file(output, file_format, file_path)
+        print(f"\n[+] Result saved to: {file_path}")
 
 
 if __name__ == "__main__":
