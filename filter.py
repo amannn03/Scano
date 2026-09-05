@@ -2,42 +2,56 @@ import re
 
 
 def parse_nmap_output(output):
-    """Parse Nmap output and return structured scan data."""
-
     result = {
-        "host_status": "unknown",
-        "ports": []
+        "status": "ONLINE" if "Host is up" in output else "OFFLINE",
+        "hostname": "",
+        "ports": [],
+        "os": "",
+        "device": "",
+        "distance": "",
+        "warnings": []
     }
 
-    # Check host status
-    if "Host is up" in output:
-        result["host_status"] = "up"
+    # Hostname
+    match = re.search(r"Nmap scan report for (.+)", output)
+    if match:
+        result["hostname"] = match.group(1).strip()
 
-    elif "Host seems down" in output:
-        result["host_status"] = "down"
-
-    # Match Nmap port lines
-    pattern = re.compile(
-        r"^(\d+)/(tcp|udp)\s+(\w+)\s+(\S+)(?:\s+(.*))?$"
-    )
-
+    # Ports
     for line in output.splitlines():
+        match = re.match(
+            r"(\d+)/(tcp|udp)\s+(\S+)\s+(\S+)(?:\s+(.*))?",
+            line.strip()
+        )
 
-        line = line.strip()
+        if match:
+            port, protocol, state, service, version = match.groups()
 
-        match = pattern.match(line)
+            result["ports"].append({
+                "port": port,
+                "protocol": protocol,
+                "state": state,
+                "service": service,
+                "version": version or ""
+            })
 
-        if not match:
-            continue
+    # OS
+    match = re.search(r"OS details:\s*(.+)", output)
+    if match:
+        result["os"] = match.group(1).strip()
 
-        port, protocol, state, service, version = match.groups()
+    match = re.search(r"Device type:\s*(.+)", output)
+    if match:
+        result["device"] = match.group(1).strip()
 
-        result["ports"].append({
-            "port": int(port),
-            "protocol": protocol,
-            "state": state,
-            "service": service,
-            "version": version.strip() if version else ""
-        })
+    # Network distance
+    match = re.search(r"Network Distance:\s*(.+)", output)
+    if match:
+        result["distance"] = match.group(1).strip()
+
+    # Warnings
+    for line in output.splitlines():
+        if "Warning:" in line or "Too many fingerprints" in line:
+            result["warnings"].append(line.strip())
 
     return result
