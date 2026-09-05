@@ -1,4 +1,6 @@
 from scan import run_scan
+from filter import parse_nmap_output
+from result import display_result
 
 
 def show_scan_menu():
@@ -38,13 +40,33 @@ def main():
         print("\nGoodbye!")
         return
 
-    result = run_scan(target, choice)
+    # Run selected scan
+    raw_result = run_scan(target, choice)
 
-    print("\n" + "=" * 50)
-    print("                 SCAN RESULT")
-    print("=" * 50)
+    # Check for errors
+    if raw_result.startswith("[!]"):
+        print(raw_result)
+        return
 
-    print(result)
+    # Filter Nmap output
+    filtered_result = parse_nmap_output(raw_result)
+
+    # Get scan name
+    scan_name = {
+        "1": "Basic Scan",
+        "2": "Service Scan",
+        "3": "Full Port Scan",
+        "4": "UDP Scan",
+        "5": "OS Detection",
+        "6": "Detailed Scan",
+        "7": "Vulnerability Scan",
+        "8": "Network Discovery",
+        "9": "Port Scan",
+        "10": "Custom Scan"
+    }.get(choice, "Scan")
+
+    # Display formatted result
+    display_result(target, filtered_result, scan_name)
 
 
 if __name__ == "__main__":
